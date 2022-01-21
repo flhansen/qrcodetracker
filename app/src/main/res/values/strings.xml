@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Ticket Scanner</string>
+    <string name="qr_scanning_info_text">Bitte QR-Code in den markierten Bereich halten</string>
+</resources>
