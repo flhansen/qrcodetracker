@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/cameraFragment">
+    <fragment
+        android:id="@+id/cameraFragment"
+        android:name="com.florianhansen.qrcodetracker.ui.CameraFragment"
+        android:label="CameraFragment" >
+        <action
+            android:id="@+id/action_cameraFragment_to_successFragment"
+            app:destination="@id/successFragment" />
+        <action
+            android:id="@+id/action_cameraFragment_to_failureFragment"
+            app:destination="@id/failureFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/successFragment"
+        android:name="com.florianhansen.qrcodetracker.ui.SuccessFragment"
+        android:label="SuccessFragment" />
+    <fragment
+        android:id="@+id/failureFragment"
+        android:name="com.florianhansen.qrcodetracker.ui.FailureFragment"
+        android:label="FailureFragment" />
+</navigation>
