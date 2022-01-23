@@ -18,9 +18,17 @@
     <fragment
         android:id="@+id/successFragment"
         android:name="com.florianhansen.qrcodetracker.ui.SuccessFragment"
-        android:label="SuccessFragment" />
+        android:label="SuccessFragment" >
+        <action
+            android:id="@+id/action_successFragment_to_cameraFragment"
+            app:destination="@id/cameraFragment" />
+    </fragment>
     <fragment
         android:id="@+id/failureFragment"
         android:name="com.florianhansen.qrcodetracker.ui.FailureFragment"
-        android:label="FailureFragment" />
+        android:label="FailureFragment" >
+        <action
+            android:id="@+id/action_failureFragment_to_cameraFragment"
+            app:destination="@id/cameraFragment" />
+    </fragment>
 </navigation>
