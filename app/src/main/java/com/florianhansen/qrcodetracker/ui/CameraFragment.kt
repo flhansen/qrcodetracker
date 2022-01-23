@@ -1,5 +1,6 @@
 package com.florianhansen.qrcodetracker.ui
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Size
 import android.view.View
@@ -10,26 +11,42 @@ import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
+import androidx.navigation.fragment.findNavController
 import com.florianhansen.qrcodetracker.R
-import com.florianhansen.qrcodetracker.helper.ImageHelper.Companion.toBitmap
+import com.google.mlkit.vision.barcode.BarcodeScanner
+import com.google.mlkit.vision.barcode.BarcodeScannerOptions
+import com.google.mlkit.vision.barcode.BarcodeScanning
+import com.google.mlkit.vision.barcode.common.Barcode
+import com.google.mlkit.vision.common.InputImage
 
-class CameraFragment : Fragment(R.layout.fragment_camera), CameraXConfig.Provider, ImageAnalysis.Analyzer {
-    private var isScanning: Boolean = false
+class CameraFragment : Fragment(R.layout.fragment_camera), CameraXConfig.Provider,
+    ImageAnalysis.Analyzer {
+    private var isProcessing: Boolean = false
+    private lateinit var scanner: BarcodeScanner
     private lateinit var cameraPreviewView: PreviewView
+    private lateinit var cameraProvider : ProcessCameraProvider
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         cameraPreviewView = view.findViewById(R.id.cameraPreviewView)
+
+        val options = BarcodeScannerOptions.Builder()
+            .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
+            .build()
+
+        scanner = BarcodeScanning.getClient(options)
+
         startCameraPreview()
     }
 
     private fun startCameraPreview() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(context!!)
 
-        cameraProviderFuture.addListener(Runnable {
-            val cameraProvider = cameraProviderFuture.get()
+        cameraProviderFuture.addListener({
+            cameraProvider = cameraProviderFuture.get()
             bindPreview(cameraProvider)
-        }, ContextCompat.getMainExecutor(context))
+        }, ContextCompat.getMainExecutor(requireContext()))
     }
 
     private fun bindPreview(cameraProvider: ProcessCameraProvider) {
@@ -45,28 +62,52 @@ class CameraFragment : Fragment(R.layout.fragment_camera), CameraXConfig.Provide
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
             .build()
 
-        imageAnalysis.setAnalyzer(ContextCompat.getMainExecutor(context), this)
+        imageAnalysis.setAnalyzer(ContextCompat.getMainExecutor(requireContext()), this)
 
         preview.setSurfaceProvider(cameraPreviewView.surfaceProvider)
-        cameraProvider.bindToLifecycle(this as LifecycleOwner, cameraSelector, imageAnalysis, preview)
+        cameraProvider.bindToLifecycle(
+            requireContext() as LifecycleOwner,
+            cameraSelector,
+            imageAnalysis,
+            preview
+        )
     }
 
     override fun getCameraXConfig(): CameraXConfig {
         return Camera2Config.defaultConfig()
     }
 
-    override fun analyze(image: ImageProxy) {
-        val bitmap = image.toBitmap()
-        image.close()
+    @SuppressLint("UnsafeExperimentalUsageError")
+    override fun analyze(imageProxy: ImageProxy) {
+        val mediaImage = imageProxy.image
 
-        if (!isScanning) {
-            isScanning = true
+        if (mediaImage != null && !isProcessing) {
+            isProcessing = true
+            val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
 
-            Thread {
-                // TODO: Implement QR code scanning here.
-                isScanning = false
-            }.start()
+            scanner.process(image)
+                .addOnSuccessListener { barcodes ->
+                    if (barcodes.size > 0) {
+                        val barcode = com.florianhansen.qrcodetracker.mvvm.model.Barcode()
+                        barcode.content = barcodes[0].rawValue!!
+                        barcode.isAlreadyRegistererd = false
+
+                        val action = CameraFragmentDirections.actionCameraFragmentToSuccessFragment(barcode)
+                        findNavController().navigate(action)
+                    }
+                }
+                .addOnFailureListener {
+                }
+                .addOnCompleteListener {
+                    imageProxy.close()
+                    isProcessing = false
+                }
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        cameraProvider.unbindAll()
     }
 
 }

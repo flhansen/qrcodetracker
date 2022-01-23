@@ -4,17 +4,12 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Size
 import android.widget.Toast
-import androidx.camera.camera2.Camera2Config
-import androidx.camera.core.*
-import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.camera.view.PreviewView
-import androidx.core.content.ContextCompat
-import androidx.lifecycle.LifecycleOwner
-import com.florianhansen.qrcodetracker.helper.ImageHelper.Companion.toBitmap
 
 class MainActivity : AppCompatActivity() {
+    companion object {
+        const val REQUEST_CODE_CAMERA_PERMISSION = 10
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,10 +25,8 @@ class MainActivity : AppCompatActivity() {
         grantResults: IntArray
     ) {
         when (requestCode) {
-            MainActivity.REQUEST_CODE_CAMERA_PERMISSION -> {
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    showCameraFragment()
-                } else {
+            REQUEST_CODE_CAMERA_PERMISSION -> {
+                if (grantResults.isNotEmpty() && grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                     Toast.makeText(applicationContext, "Permission denied", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -43,19 +36,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showCameraFragment() {
-
-    }
-
     private fun requestCameraPermission() {
         requestPermissions(arrayOf(Manifest.permission.CAMERA), REQUEST_CODE_CAMERA_PERMISSION)
     }
 
     private fun requestActivityPermissions() {
         when {
-            checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED -> {
-                showCameraFragment()
-            }
             shouldShowRequestPermissionRationale(Manifest.permission.CAMERA) -> {
                 requestCameraPermission()
             }
@@ -65,7 +51,4 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    companion object {
-        const val REQUEST_CODE_CAMERA_PERMISSION = 10
-    }
 }

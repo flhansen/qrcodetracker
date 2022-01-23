@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">Ticket Scanner</string>
     <string name="qr_scanning_info_text">Bitte QR-Code in den markierten Bereich halten</string>
+    <string name="qr_scanned_text1">Ticketnummer</string>
+    <string name="qr_scanned_text2_success">wurde registriert</string>
+    <string name="qr_scanned_text2_failure">bereits registriert</string>
+    <string name="qr_scanned_button">Weiter</string>
 </resources>

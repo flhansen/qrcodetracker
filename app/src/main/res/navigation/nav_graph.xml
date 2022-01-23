@@ -7,20 +7,17 @@
     <fragment
         android:id="@+id/cameraFragment"
         android:name="com.florianhansen.qrcodetracker.ui.CameraFragment"
-        android:label="CameraFragment" >
+        android:label="CameraFragment"
+        tools:layout="@layout/fragment_camera">
         <action
             android:id="@+id/action_cameraFragment_to_successFragment"
-            app:destination="@id/successFragment" />
-        <action
-            android:id="@+id/action_cameraFragment_to_failureFragment"
-            app:destination="@id/failureFragment" />
+            app:destination="@id/scanFragment">
+            <argument android:name="barcode" app:argType="com.florianhansen.qrcodetracker.mvvm.model.Barcode" />
+        </action>
     </fragment>
     <fragment
-        android:id="@+id/successFragment"
-        android:name="com.florianhansen.qrcodetracker.ui.SuccessFragment"
-        android:label="SuccessFragment" />
-    <fragment
-        android:id="@+id/failureFragment"
-        android:name="com.florianhansen.qrcodetracker.ui.FailureFragment"
-        android:label="FailureFragment" />
+        android:id="@+id/scanFragment"
+        android:name="com.florianhansen.qrcodetracker.ui.ScanFragment"
+        android:label="SuccessFragment"
+        tools:layout="@layout/fragment_scan"/>
 </navigation>
