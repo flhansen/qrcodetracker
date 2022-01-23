@@ -4,15 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Size
 import android.widget.Toast
-import androidx.camera.camera2.Camera2Config
-import androidx.camera.core.*
-import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.camera.view.PreviewView
-import androidx.core.content.ContextCompat
-import androidx.lifecycle.LifecycleOwner
-import com.florianhansen.qrcodetracker.helper.ImageHelper.Companion.toBitmap
 
 class MainActivity : AppCompatActivity() {
     companion object {

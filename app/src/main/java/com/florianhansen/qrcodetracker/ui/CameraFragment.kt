@@ -2,7 +2,6 @@ package com.florianhansen.qrcodetracker.ui
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.util.Log
 import android.util.Size
 import android.view.View
 import androidx.camera.camera2.Camera2Config
@@ -12,6 +11,7 @@ import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
+import androidx.navigation.fragment.findNavController
 import com.florianhansen.qrcodetracker.R
 import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
@@ -21,9 +21,10 @@ import com.google.mlkit.vision.common.InputImage
 
 class CameraFragment : Fragment(R.layout.fragment_camera), CameraXConfig.Provider,
     ImageAnalysis.Analyzer {
-    private var isScanning: Boolean = false
+    private var isProcessing: Boolean = false
     private lateinit var scanner: BarcodeScanner
     private lateinit var cameraPreviewView: PreviewView
+    private lateinit var cameraProvider : ProcessCameraProvider
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -42,8 +43,8 @@ class CameraFragment : Fragment(R.layout.fragment_camera), CameraXConfig.Provide
     private fun startCameraPreview() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(context!!)
 
-        cameraProviderFuture.addListener(Runnable {
-            val cameraProvider = cameraProviderFuture.get()
+        cameraProviderFuture.addListener({
+            cameraProvider = cameraProviderFuture.get()
             bindPreview(cameraProvider)
         }, ContextCompat.getMainExecutor(requireContext()))
     }
@@ -80,21 +81,33 @@ class CameraFragment : Fragment(R.layout.fragment_camera), CameraXConfig.Provide
     override fun analyze(imageProxy: ImageProxy) {
         val mediaImage = imageProxy.image
 
-        Log.i("CameraFragment.analyze", "New frame: ${mediaImage?.width}x${mediaImage?.height}")
-
-        if (mediaImage != null) {
+        if (mediaImage != null && !isProcessing) {
+            isProcessing = true
             val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
-            val result = scanner.process(image)
+
+            scanner.process(image)
                 .addOnSuccessListener { barcodes ->
-                    Log.i("BarcodeScanner", barcodes.size.toString())
+                    if (barcodes.size > 0) {
+                        val barcode = com.florianhansen.qrcodetracker.mvvm.model.Barcode()
+                        barcode.content = barcodes[0].rawValue!!
+                        barcode.isAlreadyRegistererd = false
+
+                        val action = CameraFragmentDirections.actionCameraFragmentToSuccessFragment(barcode)
+                        findNavController().navigate(action)
+                    }
                 }
                 .addOnFailureListener {
-                    Log.e("BarcodeScanner", it.message!!)
                 }
                 .addOnCompleteListener {
                     imageProxy.close()
+                    isProcessing = false
                 }
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        cameraProvider.unbindAll()
     }
 
 }
