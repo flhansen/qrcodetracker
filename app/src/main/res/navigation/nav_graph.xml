@@ -12,7 +12,7 @@
         <action
             android:id="@+id/action_cameraFragment_to_successFragment"
             app:destination="@id/scanFragment">
-            <argument android:name="barcode" app:argType="com.florianhansen.qrcodetracker.mvvm.model.Barcode" />
+            <argument android:name="barcode" app:argType="com.florianhansen.qrcodetracker.model.Barcode" />
         </action>
     </fragment>
     <fragment

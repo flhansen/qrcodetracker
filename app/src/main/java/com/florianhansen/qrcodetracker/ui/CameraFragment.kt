@@ -13,11 +13,14 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.fragment.findNavController
 import com.florianhansen.qrcodetracker.R
+import com.florianhansen.qrcodetracker.database.BarcodeService
 import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
+import retrofit2.*
+import retrofit2.converter.gson.GsonConverterFactory
 
 class CameraFragment : Fragment(R.layout.fragment_camera), CameraXConfig.Provider,
     ImageAnalysis.Analyzer {
@@ -73,6 +76,46 @@ class CameraFragment : Fragment(R.layout.fragment_camera), CameraXConfig.Provide
         )
     }
 
+    private fun processScanResults(results: MutableList<Barcode>) {
+        if (results.size > 0 && !isProcessing) {
+            isProcessing = true
+            val barcodeId = Integer.parseInt(results[0].rawValue!!)
+
+            val service = Retrofit.Builder()
+                .baseUrl("http://192.168.2.217:8080/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build()
+                .create(BarcodeService::class.java)
+
+            val barcodeRequest = service.registerBarcode(barcodeId)
+            barcodeRequest.enqueue(object : Callback<com.florianhansen.qrcodetracker.model.Barcode> {
+                override fun onResponse(
+                    call: Call<com.florianhansen.qrcodetracker.model.Barcode>,
+                    response: Response<com.florianhansen.qrcodetracker.model.Barcode>
+                ) {
+                    var barcode = response.body()
+
+                    if (barcode == null) {
+                        barcode = com.florianhansen.qrcodetracker.model.Barcode()
+                        barcode.id = barcodeId
+                    }
+
+                    val action = CameraFragmentDirections.actionCameraFragmentToSuccessFragment(barcode)
+                    findNavController().navigate(action)
+                    isProcessing = false
+                }
+
+                override fun onFailure(
+                    call: Call<com.florianhansen.qrcodetracker.model.Barcode>,
+                    t: Throwable
+                ) {
+                }
+            })
+
+
+        }
+    }
+
     override fun getCameraXConfig(): CameraXConfig {
         return Camera2Config.defaultConfig()
     }
@@ -82,25 +125,16 @@ class CameraFragment : Fragment(R.layout.fragment_camera), CameraXConfig.Provide
         val mediaImage = imageProxy.image
 
         if (mediaImage != null && !isProcessing) {
-            isProcessing = true
             val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
 
             scanner.process(image)
-                .addOnSuccessListener { barcodes ->
-                    if (barcodes.size > 0) {
-                        val barcode = com.florianhansen.qrcodetracker.mvvm.model.Barcode()
-                        barcode.content = barcodes[0].rawValue!!
-                        barcode.isAlreadyRegistererd = false
-
-                        val action = CameraFragmentDirections.actionCameraFragmentToSuccessFragment(barcode)
-                        findNavController().navigate(action)
-                    }
+                .addOnSuccessListener { results ->
+                    processScanResults(results)
                 }
                 .addOnFailureListener {
                 }
                 .addOnCompleteListener {
                     imageProxy.close()
-                    isProcessing = false
                 }
         }
     }

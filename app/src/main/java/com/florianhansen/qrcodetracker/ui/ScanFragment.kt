@@ -10,8 +10,8 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.florianhansen.qrcodetracker.R
 import com.florianhansen.qrcodetracker.databinding.FragmentScanBinding
-import com.florianhansen.qrcodetracker.mvvm.model.Barcode
-import com.florianhansen.qrcodetracker.mvvm.viewmodel.BarcodeViewModel
+import com.florianhansen.qrcodetracker.model.Barcode
+import com.florianhansen.qrcodetracker.viewmodel.BarcodeViewModel
 
 class ScanFragment : Fragment(R.layout.fragment_scan) {
 

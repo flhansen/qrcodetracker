@@ -3,7 +3,7 @@
     <data>
         <variable
             name="barcode"
-            type="com.florianhansen.qrcodetracker.mvvm.viewmodel.BarcodeViewModel" />
+            type="com.florianhansen.qrcodetracker.viewmodel.BarcodeViewModel" />
     </data>
     <LinearLayout
         android:layout_width="match_parent"
@@ -24,7 +24,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
-                android:src="@{barcode.success ? @drawable/ic_baseline_check_24 : @drawable/ic_baseline_close_24}" />
+                android:src="@{barcode.registered ? @drawable/ic_baseline_check_24 : @drawable/ic_baseline_close_24}" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -52,7 +52,7 @@
                     android:textColor="@color/text_secondary"
                     android:textSize="24sp"
                     android:textAlignment="center"
-                    android:text="@{barcode.success ? @string/qr_scanned_text2_success : @string/qr_scanned_text2_failure}" />
+                    android:text="@{barcode.registered ? @string/qr_scanned_text2_success : @string/qr_scanned_text2_failure}" />
             </LinearLayout>
 
         </LinearLayout>
