@@ -6,4 +6,8 @@
     <string name="qr_scanned_text2_failure">bereits registriert</string>
     <string name="qr_scanned_button">Weiter</string>
     <string name="content_description_settings_button">Image button to open up the settings</string>
+    <string name="settings_backend_section">Backend settings</string>
+    <string name="settings_backend_hostname_hint">Hostname</string>
+    <string name="settings_backend_port_hint">Port</string>
+    <string name="settings_button_apply">Verbindung testen</string>
 </resources>

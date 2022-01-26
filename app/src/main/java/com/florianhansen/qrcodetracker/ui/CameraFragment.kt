@@ -10,10 +10,13 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.fragment.findNavController
 import com.florianhansen.qrcodetracker.R
 import com.florianhansen.qrcodetracker.database.BarcodeService
+import com.florianhansen.qrcodetracker.viewmodel.BarcodeViewModel
+import com.florianhansen.qrcodetracker.viewmodel.MainViewModel
 import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
@@ -28,6 +31,7 @@ class CameraFragment : Fragment(R.layout.fragment_camera), CameraXConfig.Provide
     private lateinit var scanner: BarcodeScanner
     private lateinit var cameraPreviewView: PreviewView
     private lateinit var cameraProvider : ProcessCameraProvider
+    private val mainViewModel: MainViewModel by activityViewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -100,7 +104,8 @@ class CameraFragment : Fragment(R.layout.fragment_camera), CameraXConfig.Provide
                         barcode.id = barcodeId
                     }
 
-                    val action = CameraFragmentDirections.actionCameraFragmentToSuccessFragment(barcode)
+                    mainViewModel.barcodeViewModel = BarcodeViewModel(barcode)
+                    val action = CameraFragmentDirections.actionCameraFragmentToScanFragment()
                     findNavController().navigate(action)
                     isProcessing = false
                 }

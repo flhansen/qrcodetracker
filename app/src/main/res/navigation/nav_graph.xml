@@ -4,20 +4,27 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
     app:startDestination="@id/cameraFragment">
+
+    <action android:id="@+id/action_global_settingsFragment"
+        app:destination="@id/settingsFragment" />
+
     <fragment
         android:id="@+id/cameraFragment"
         android:name="com.florianhansen.qrcodetracker.ui.CameraFragment"
         android:label="CameraFragment"
         tools:layout="@layout/fragment_camera">
         <action
-            android:id="@+id/action_cameraFragment_to_successFragment"
-            app:destination="@id/scanFragment">
-            <argument android:name="barcode" app:argType="com.florianhansen.qrcodetracker.model.Barcode" />
-        </action>
+            android:id="@+id/action_cameraFragment_to_scanFragment"
+            app:destination="@id/scanFragment" />
     </fragment>
     <fragment
         android:id="@+id/scanFragment"
         android:name="com.florianhansen.qrcodetracker.ui.ScanFragment"
         android:label="SuccessFragment"
         tools:layout="@layout/fragment_scan"/>
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.florianhansen.qrcodetracker.ui.SettingsFragment"
+        android:label="SettingsFragment"
+        tools:layout="@layout/fragment_settings"/>
 </navigation>

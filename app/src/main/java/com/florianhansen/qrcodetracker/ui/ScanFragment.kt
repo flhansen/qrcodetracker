@@ -7,15 +7,16 @@ import android.view.ViewGroup
 import android.widget.Button
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.florianhansen.qrcodetracker.R
 import com.florianhansen.qrcodetracker.databinding.FragmentScanBinding
-import com.florianhansen.qrcodetracker.model.Barcode
-import com.florianhansen.qrcodetracker.viewmodel.BarcodeViewModel
+import com.florianhansen.qrcodetracker.viewmodel.MainViewModel
 
 class ScanFragment : Fragment(R.layout.fragment_scan) {
 
     private lateinit var nextButton : Button
+    private val mainViewModel: MainViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -24,8 +25,9 @@ class ScanFragment : Fragment(R.layout.fragment_scan) {
     ): View {
         val binding: FragmentScanBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_scan, container, false)
 
-        val viewModel = BarcodeViewModel(arguments?.get("barcode") as Barcode)
-        binding.barcode = viewModel
+        binding.apply {
+            barcode = mainViewModel.barcodeViewModel
+        }
 
         return binding.root
     }

@@ -4,6 +4,7 @@
     <color name="secondary">#12DA92</color>
     <color name="background">#151A22</color>
     <color name="text_primary">#FFFFFF</color>
+    <color name="hint">#80FFFFFF</color>
     <color name="text_secondary">#D4F0F0</color>
     <color name="error">#FF76B0</color>
     <color name="success">#1CF097</color>
