@@ -5,4 +5,5 @@
     <string name="qr_scanned_text2_success">wurde registriert</string>
     <string name="qr_scanned_text2_failure">bereits registriert</string>
     <string name="qr_scanned_button">Weiter</string>
+    <string name="content_description_settings_button">Image button to open up the settings</string>
 </resources>
