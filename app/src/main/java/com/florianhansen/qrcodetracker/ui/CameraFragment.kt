@@ -2,6 +2,7 @@ package com.florianhansen.qrcodetracker.ui
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import android.util.Size
 import android.view.View
 import androidx.camera.camera2.Camera2Config
@@ -33,13 +34,17 @@ class CameraFragment : Fragment(R.layout.fragment_camera), CameraXConfig.Provide
     private lateinit var cameraProvider : ProcessCameraProvider
     private val mainViewModel: MainViewModel by activityViewModels()
 
+    companion object {
+        const val TAG = "CameraFragment"
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         cameraPreviewView = view.findViewById(R.id.cameraPreviewView)
 
         val options = BarcodeScannerOptions.Builder()
-            .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
+            .setBarcodeFormats(Barcode.FORMAT_ALL_FORMATS)
             .build()
 
         scanner = BarcodeScanning.getClient(options)
@@ -82,42 +87,47 @@ class CameraFragment : Fragment(R.layout.fragment_camera), CameraXConfig.Provide
 
     private fun processScanResults(results: MutableList<Barcode>) {
         if (results.size > 0 && !isProcessing) {
-            isProcessing = true
-            val barcodeId = Integer.parseInt(results[0].rawValue!!)
+            val leadingZeros = Regex("^0+")
+            val barcodeId = results[0].rawValue!!.replace(leadingZeros, "").toIntOrNull()
+            Log.i(TAG, results[0].rawValue!!)
 
-            val service = Retrofit.Builder()
-                .baseUrl("http://192.168.2.217:8080/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build()
-                .create(BarcodeService::class.java)
+            if (barcodeId != null) {
+                isProcessing = true
+                Log.i(TAG, "Viemodel target: ${mainViewModel.settingsViewModel.hostname}:${mainViewModel.settingsViewModel.port}")
 
-            val barcodeRequest = service.registerBarcode(barcodeId)
-            barcodeRequest.enqueue(object : Callback<com.florianhansen.qrcodetracker.model.Barcode> {
-                override fun onResponse(
-                    call: Call<com.florianhansen.qrcodetracker.model.Barcode>,
-                    response: Response<com.florianhansen.qrcodetracker.model.Barcode>
-                ) {
-                    var barcode = response.body()
+                val service = Retrofit.Builder()
+                    .baseUrl("http://192.168.2.222:8080/")
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build()
+                    .create(BarcodeService::class.java)
 
-                    if (barcode == null) {
-                        barcode = com.florianhansen.qrcodetracker.model.Barcode()
-                        barcode.id = barcodeId
+                val barcodeRequest = service.registerBarcode(barcodeId)
+                barcodeRequest.enqueue(object : Callback<com.florianhansen.qrcodetracker.model.Barcode> {
+                    override fun onResponse(
+                        call: Call<com.florianhansen.qrcodetracker.model.Barcode>,
+                        response: Response<com.florianhansen.qrcodetracker.model.Barcode>
+                    ) {
+                        var barcode = response.body()
+
+                        if (barcode == null) {
+                            barcode = com.florianhansen.qrcodetracker.model.Barcode()
+                            barcode.id = barcodeId
+                        }
+
+                        mainViewModel.barcodeViewModel = BarcodeViewModel(barcode)
+                        val action = CameraFragmentDirections.actionCameraFragmentToScanFragment()
+                        findNavController().navigate(action)
+                        isProcessing = false
                     }
 
-                    mainViewModel.barcodeViewModel = BarcodeViewModel(barcode)
-                    val action = CameraFragmentDirections.actionCameraFragmentToScanFragment()
-                    findNavController().navigate(action)
-                    isProcessing = false
-                }
-
-                override fun onFailure(
-                    call: Call<com.florianhansen.qrcodetracker.model.Barcode>,
-                    t: Throwable
-                ) {
-                }
-            })
-
-
+                    override fun onFailure(
+                        call: Call<com.florianhansen.qrcodetracker.model.Barcode>,
+                        t: Throwable
+                    ) {
+                        isProcessing = false
+                    }
+                })
+            }
         }
     }
 
